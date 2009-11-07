@@ -9,13 +9,6 @@ if (!defined('PHPX_INIT')) {
     define('PHPX_INIT', false);
 }
 
-if (!defined('PHPX_USE_INCLUDE_PATH')) {
-    /**
-     * Set to true to search the PHP include path when loading files
-     */
-    define('PHPX_USE_INCLUDE_PATH', false);
-}
-
 class Stream
 {
     //
@@ -58,35 +51,44 @@ class Stream
     private $parsed;
     private $len;
     
-    private $cached     = false;
-    private $fd         = null;
+    private $cached         = false;
+    private $absolute_path  = null;
+    private $fd             = null;
     
     public function stream_open($path, $mode, $options, &$opened_path) {
-        
-        $file_path  = substr($path, 7); // strip leading phpx://
-        $flags      = 0;
         
         if (strpos($mode, 'r') === false) {
             return false;
         }
         
+        $this->absolute_path = substr($path, 7); // strip leading phpx://
         if ($options & STREAM_USE_PATH) {
-            $flags |= FILE_USE_INCLUDE_PATH;
+            if (!is_readable($this->absolute_path)) {
+                $this->absolute_path = $this->resolve_file_in_include_path($this->absolute_path);
+                if (!$this->absolute_path) {
+                    return false;
+                }
+            }
         }
         
-        if (!$source = file_get_contents($file_path, $flags)) {
+        if (!$source = file_get_contents($this->absolute_path)) {
             return false;
         }
+        
+        $opened_path = $this->absolute_path;
         
         self::load_phpx();
         
         if (in_array($file_path, self::$stack)) {
-            trigger_error("phpx: cyclic dependencies encountered while attempting to load $file_path");
+            trigger_error(
+                "phpx: cyclic dependencies encountered while attempting to load $file_path",
+                E_USER_ERROR
+            );
         }
         
         try {
             
-            self::$stack[] = $file_path;
+            self::$stack[] = $this->absolute_path;
 
             $parser         = new Parser;
             $source_tree    = $parser->parse($source);
@@ -105,6 +107,22 @@ class Stream
         
         return true;
         
+    }
+    
+    // no idea why i need to write this method myself, PHP should do it for me.
+    private function resolve_file_in_include_path($file) {
+        $candidates = explode(PATH_SEPARATOR, get_include_path());
+        foreach ($candidates as $dir) {
+            $path = realpath($dir . '/' . $file);
+            if ($path && is_readable($path)) {
+                return $path;
+            }
+        }
+        return null;
+    }
+    
+    public function stream_stat() {
+        return $this->cached ? fstat($this->fd) : stat($this->absolute_path);
     }
     
     public function stream_read($count) {
