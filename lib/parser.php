@@ -13,6 +13,8 @@ class Parser
     private $tokens;
     private $curr;
     
+    private $namespace      = '';
+    
     public function parse($text) {
         $this->reset($text);
         return $this->parse_source_file();
@@ -30,6 +32,10 @@ class Parser
         while (!$this->eof()) {
             if ($this->at(array(T_ABSTRACT, T_CLASS))) {
                 $source->push($this->parse_class());
+            } elseif ($this->at(T_NAMESPACE)) {
+                $this->accept();
+                $this->s();
+                // TODO: finish
             } else {
                 $source->push($this->current_text());
                 $this->accept();
@@ -56,6 +62,7 @@ class Parser
         
         $class = new ClassDef($this->parse_ident());
         $class->set_abstract($abstract);
+        $class->set_namespace($this->namespace);
         $this->s();
         
         // superclass
@@ -171,10 +178,34 @@ class Parser
                 }
 
             } elseif ($this->at(T_EVAL)) {
+                
                 $this->accept();
                 $this->s();
                 $code = $this->parse_block();
                 class_eval_without_scope($class, $code);
+            
+            } elseif ($this->at(T_INCLUDE)) {
+                
+                $this->accept();
+                $this->s();
+                
+                $mixin_method = 'mixin';
+                if ($this->at(T_CONST)) {
+                    $mixin_method .= '_constants';
+                    $this->accept();
+                    $this->s();
+                } elseif ($this->at(T_STATIC)) {
+                    $mixin_method .= '_static';
+                    $this->accept();
+                    $this->s();
+                }
+                
+                $module = $this->parse_absolute_namespaced_ident();
+                $this->s();
+                $this->accept(';');
+                
+                $class->{$mixin_method}($module);
+                
             }
 
             $this->s();
@@ -278,7 +309,10 @@ class Parser
     }
     
     private function at_class_part() {
-        return $this->at_qualifier() || $this->at(T_CONST) || $this->at(T_EVAL);
+        return $this->at_qualifier()
+                || $this->at(T_CONST)
+                || $this->at(T_EVAL)
+                || $this->at(T_INCLUDE);
     }
     
     private function at_qualifier() {

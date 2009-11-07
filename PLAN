@@ -1,7 +1,7 @@
 Parser
     X read entire PHP file and assemble it into some structure
     X classes should be stored as instances of ClassDef
-    - Namespace support
+    X Namespace support
     X Abstract classes
     X Magic methods for assigning access qualifiers
     
@@ -10,25 +10,28 @@ Modify parser to support features:
 
     X eval{}
     X delegation
-    - mixins
+    X mixins
     - pattern matching
     
 Other features:
 
     - forward declarations
+    - allow delegates to implement multiple interfaces
     
 Last mile stuff:
 
-    - stream loader
-    - auto loader
+    X stream loader
+    X auto loader
     - caching
       - mtime check
         define('PHPX_MTIME_CHECK', true);
         define('PHPX_MTIME_CHECK', 'functionname');
-    - macro registration, with some way of delayed loading
+    X macro registration, with some way of delayed loading
     
 Possible bugs:
 
     - type-hinted classes don't get leading slash for namespace
     - parser doesn't recognise "final"
     - parser doesn't recognise methods returning by reference
+    - mixing in class implementing interface should cause recipient to implement interface
+    - prevent duplicate interfaces

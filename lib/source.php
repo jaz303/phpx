@@ -1,14 +1,6 @@
 <?php
 namespace phpx;
 
-function value_or_object($thing) {
-    return is_object($thing) ? $thing : new Value($thing);
-}
-
-function literal_or_object($thing) {
-    return is_object($thing) ? $thing : new Literal($thing);
-}
-
 class SourceFile
 {
     private $bits = array();
@@ -17,18 +9,26 @@ class SourceFile
         $this->bits[] = $thing;
     }
     
-    public function to_php() {
-        $out = '';
-        foreach ($this->bits as $b) {
-            $out .= is_object($b) ? $b->to_php() : $b;
+    public function get_defined_classes() {
+        $out = array();
+        foreach ($this->bits as $bit) {
+            if ($bit instanceof ClassDef) $out[] = $bit;
         }
         return $out;
+    }
+    
+    public function to_php() {
+        return implode('', array_map(function($b) {
+            return is_object($b) ? $b->to_php() : $b;
+        }, $this->bits));
     }
 }
 
 class ClassDef
 {
     private $name;
+    private $namespace      = '';
+    
     private $abstract       = false;
     private $superclass     = null;
     private $interfaces     = array();
@@ -44,6 +44,19 @@ class ClassDef
     }
     
     public function get_name() { return $this->name; }
+    
+    public function has_namespace() { return strlen($this->namespace) > 0; }
+    public function get_namespace() { return $this->namespace; }
+    public function set_namespace($ns) { $this->namespace = $ns; }
+    
+    public function get_qualified_name() {
+        $qn = '\\';
+        if ($this->has_namespace()) {
+            $qn .= $this->get_namespace() . '\\';
+        }
+        $qn .= $this->name;
+        return $qn;
+    }
     
     public function is_abstract() { return $this->abstract; }
     public function set_abstract($a) { $this->abstract = (bool) $a; }
@@ -118,6 +131,14 @@ class ClassDef
         }
     }
     
+    protected function index_to_array($index) {
+        $out = array();
+        foreach ($this->{$index} as $ix) {
+            $out[] = $this->chunks[$ix];
+        }
+        return $out;
+    }
+    
     protected function add_to_index($index, $thing) {
         $name = $thing->get_name();
         if ($this->index_contains($index, $name)) {
@@ -138,50 +159,107 @@ class ClassDef
     }
     
     //
+    // Mixins
+    
+    public function mixin($class) {
+        $this->mixin_methods_and_variables($class, false);
+    }
+    
+    public function mixin_static($class) {
+        $this->mixin_methods_and_variables($class, true);
+    }
+    
+    public function mixin_constants($class) {
+        foreach (Library::lookup($class)->constants() as $constant) {
+            $this->add_constant($constant);
+        }
+    }
+    
+    protected function mixin_methods_and_variables($class, $static) {
+        $def = Library::lookup($class);
+        foreach ($def->select(array('method', 'variable')) as $thing) {
+            if ($thing instanceof Method) {
+                $this->add_method($thing);
+            } elseif ($thing instanceof Variable) {
+                $this->add_variable($thing);
+            }
+        }
+    }
+    
+    //
+    // Selection
+    
+    public function select($selected_things) {
+        
+        $method     = false;
+        $variable   = false;
+        $constant   = false;
+        
+        foreach ((array) $selected_things as $thing) $$thing = true;
+        
+        $out = array();
+        foreach ($this->chunks as $chunk) {
+            if (($method && $chunk instanceof Method) ||
+                ($variable && $chunk instanceof Variable) ||
+                ($constant && $chunk instanceof Constant)) {
+                $out[] = $chunk;
+            }
+        }
+        
+        return $out;
+        
+    }
+    
+    public function constants() { return $this->select('constant'); }
+    public function variables() { return $this->select('variable'); }
+    public function methods() { return $this->select('method'); }
+    
+    //
     // Magic Mojo
     
     public function __call($method, $args) {
-        
-        // Lookup
-        if (preg_match('/^(constant|variable|method)$/', $method, $match)) {
-            return $this->index_get($match[0], $args[0]);
-        }
         
         // Existence check
         if (preg_match('/^(constant|variable|method)_defined$/', $method, $match)) {
             return $this->index_contains($match[0], $args[0]);
         }
         
+        // Collections
+        if (preg_match('/^(constant|variable|method)s$/', $method, $match)) {
+            return $this->index_to_array($match[0]);
+        }
+        
+        //
+        // Index manipulation
+        
         $words = explode('_', $method);
-        
-        if (count($words) < 2) {
-            throw new \Exception("Expecting at least 2 args");
+        if (count($words) >= 2) {
+            $verb = array_shift($words);
+            $type = array_pop($words);
+            
+            if (in_array($type, array('constant', 'variable', 'method'))) {
+                switch ($verb) {
+                    case 'define':
+                        $this->with_access(
+                            new Access(implode(' ', $words)),
+                            function($class) use ($type, $args) {
+                                call_user_func_array(array($class, "define_$type"), $args);
+                            }
+                        );
+                        return;
+                    case 'add':
+                        $this->add_to_index($type, $args[0]);
+                        return;
+                    case 'remove':
+                        return $this->index_remove($type, $args[0]);
+                }
+            }
         }
         
-        $verb = array_shift($words);
-        $type = array_pop($words);
+        //
+        // Delegate anything else to the macro system
         
-        if (!in_array($type, array('constant', 'variable', 'method'))) {
-            throw new \Exception("Type should be constant, variable or method");
-        }
-        
-        switch ($verb) {
-            case 'define':
-                $this->with_access(
-                    new Access(implode(' ', $words)),
-                    function($class) use ($type, $args) {
-                        call_user_func_array(array($class, "define_$type"), $args);
-                    }
-                );
-                return;
-            case 'add':
-                $this->add_to_index($type, $args[0]);
-                return;
-            case 'remove':
-                return $this->index_remove($type, $args[0]);
-            default:
-                throw new \Exception("Unknown verb...");
-        }
+        Macro::apply($method, $this, $args);
         
     }
     
@@ -228,6 +306,36 @@ class ClassDef
                 $thing->set_final(true);
             }
         }
+    }
+    
+    //
+    // Macros
+    
+    public function attr_reader() {
+        foreach (func_get_args() as $arg) {
+            if (!$this->variable_defined($arg)) {
+                $this->define_protected_instance_variable($arg);
+            }
+            $this->define_public_instance_method("get_{$arg}", '
+                return $this->' . $arg . ';
+            ');
+        }
+    }
+    
+    public function attr_writer() {
+        foreach (func_get_args() as $arg) {
+            if (!$this->variable_defined($arg)) {
+                $this->define_protected_instance_variable($arg);
+            }
+            $this->define_public_instance_method("set_{$arg}", '$v', '
+                $this->' . $arg . ' = $v;
+            ');
+        }
+    }
+    
+    public function attr_accessor() {
+        call_user_func_array(array($this, 'attr_reader'), func_get_args());
+        call_user_func_array(array($this, 'attr_writer'), func_get_args());
     }
 }
 

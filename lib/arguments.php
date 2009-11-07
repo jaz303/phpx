@@ -42,7 +42,7 @@ class Argument
         }
         
         if ($rp->isArray()) {
-            $arg->set_type('array');
+            $arg->set_array(true);
         } elseif ($type = $rp->getClass()) {
             $arg->set_type($type->getName());
         }
@@ -56,6 +56,7 @@ class Argument
     
     private $name;
     
+    private $array              = false;
     private $type               = null;
     private $null_allowed       = false;
     private $has_default        = false;
@@ -67,6 +68,9 @@ class Argument
     }
     
     public function get_name() { return $this->name; }
+    
+    public function is_array() { return $this->array; }
+    public function set_array($a) { $this->array = (bool) $a; }
     
     public function has_type() { return $this->type !== null; }
     public function get_type() { return $this->type; }
@@ -89,8 +93,10 @@ class Argument
     public function to_php() {
         $out = '';
         
-        if ($this->has_type()) {
-            $out .= $this->get_type() . ' ';
+        if ($this->is_array()) {
+            $out .= 'array ';
+        } elseif ($this->has_type()) {
+            $out .= absolutize_namespace($this->get_type()) . ' ';
         }
         
         if ($this->is_reference()) {

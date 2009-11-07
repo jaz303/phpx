@@ -1,0 +1,7 @@
+project:
+    title: "phpx"
+    subtitle: "mixins and metaprogramming for PHP"
+    main_nav:
+        - ["Overview", "./"]
+        - ["Usage", "usage.html"]
+        - ["Examples", "examples.html"]

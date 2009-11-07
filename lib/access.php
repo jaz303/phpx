@@ -16,6 +16,8 @@ class Access
         } elseif (is_string($thing)) {
             $access = new Access;
             self::parse_string_into_access($access, $thing);
+        } else {
+            throw new \Exception("Couldn't turn $thing into phpx\\Access - expected \\Reflector, \\Access or string");
         }
         return $access;
     }

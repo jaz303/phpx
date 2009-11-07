@@ -15,12 +15,7 @@ abstract class Mooblio extends Bar implements Bleem, Baz {
     public $void = true, $raa = false, $alfred = array(10, 20, 30);
     
     eval {
-        $properties = array('forename', 'surname', 'title');
-        foreach ($properties as $property) {
-            $class->define_protected_variable($property, '');
-            $class->define_public_method("get_{$property}", 'return $this->' . $property . ';');
-            $class->define_public_method("set_{$property}", '$v', '$this->' . $property . ' = $v;');
-        }
+        $class->attr_accessor('forename', 'surname', 'title');
     }
     
     public static function foo() { return "foo"; }
@@ -33,6 +28,8 @@ abstract class Mooblio extends Bar implements Bleem, Baz {
         }
     }
     protected abstract function zebedee(array $foo, Barf $baz = null);
+    
+    include static \Foo\Bar;
     
     private $test = null implements \test\Baz;
 }
