@@ -488,9 +488,14 @@ class Method extends Member
         
     }
     
+    private $final          = false;
     private $abstract       = false;
+    
     private $arg_list       = '';
     private $body           = '';
+    
+    public function is_final() { return $this->final; }
+    public function set_final($f) { $this->final = (bool) $b; }
     
     public function is_abstract() { return $this->abstract; }
     public function set_abstract($a) { $this->abstract = (bool) $a; }
@@ -511,6 +516,7 @@ class Method extends Member
     
     public function to_php() {
         $php = $this->preamble();
+        if ($this->is_final()) $php .= " final";
         if ($this->is_abstract()) $php .= " abstract";
         $php .= " function {$this->get_name()}({$this->arg_list->to_php()})";
         if ($this->is_abstract()) {
