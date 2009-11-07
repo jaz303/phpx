@@ -145,6 +145,15 @@ class Parser
                                                         $variable->get_name(),
                                                         $this->parse_absolute_namespaced_ident());
                         $this->s();
+                        
+                        while ($this->at(',')) {
+                            $this->accept();
+                            $this->s();
+                            $this->write_interface_delegate($class,
+                                                            $variable->get_name(),
+                                                            $this->parse_absolute_namespaced_ident());
+                            $this->s();
+                        }
                     
                     } else {
                         
