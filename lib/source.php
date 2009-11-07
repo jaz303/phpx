@@ -178,6 +178,9 @@ class ClassDef
     
     public function mixin($class) {
         $this->mixin_methods_and_variables($class, false);
+        foreach (Library::lookup($class)->get_interfaces() as $interface) {
+            $this->implement($interface);
+        }
     }
     
     public function mixin_static($class) {
