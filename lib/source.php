@@ -65,7 +65,10 @@ class ClassDef
     public function is_abstract() { return $this->abstract; }
     public function set_abstract($a) { $this->abstract = (bool) $a; }
     
+    public function get_superclass() { return $this->superclass; }
     public function extend($class) { $this->superclass = $class; }
+    
+    public function get_interfaces() { return $this->interfaces; }
     public function implement($interface) {
         if (!in_array($interface, $this->interfaces)) {
             $this->interfaces[] = $interface;
