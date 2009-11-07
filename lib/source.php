@@ -467,6 +467,10 @@ class Method extends Member
         $m = new Method($method_name);
         $m->set_arg_list(ArgumentList::create_from_reflection_method($method));
         
+        if ($method->returnsReference()) {
+            $m->set_reference_returned(true);
+        }
+        
         if ($method->isPublic()) {
             $m->set_access_public();
         } elseif ($method->isProtected()) {
