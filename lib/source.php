@@ -29,6 +29,7 @@ class ClassDef
     private $name;
     private $namespace      = '';
     
+    private $final          = false;
     private $abstract       = false;
     private $superclass     = null;
     private $interfaces     = array();
@@ -58,11 +59,18 @@ class ClassDef
         return $qn;
     }
     
+    public function is_final() { return $this->final; }
+    public function set_final($f) { $this->final = (bool) $f; }
+    
     public function is_abstract() { return $this->abstract; }
     public function set_abstract($a) { $this->abstract = (bool) $a; }
     
     public function extend($class) { $this->superclass = $class; }
-    public function implement($interface) { $this->interfaces[] = $interface; }
+    public function implement($interface) {
+        if (!in_array($interface, $this->interfaces)) {
+            $this->interfaces[] = $interface;
+        }
+    }
     
     public function with_access($access, $lambda) { 
         try {
@@ -83,6 +91,10 @@ class ClassDef
     public function to_php() {
         
         $php = '';
+        
+        if ($this->is_final()) {
+            $php .= 'final ';
+        }
         
         if ($this->is_abstract()) {
             $php .= 'abstract ';

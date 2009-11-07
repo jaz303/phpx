@@ -48,9 +48,15 @@ class Parser
       
         // abstract class
       
-        $abstract = false;
-        if ($this->at(T_ABSTRACT)) {
-            $abstract = true;
+        $abstract   = false;
+        $final      = false;
+        
+        while ($this->at(array(T_ABSTRACT, T_FINAL))) {
+            if ($this->at(T_ABSTRACT)) {
+                $abstract = true;
+            } else {
+                $final = true;
+            }
             $this->accept();
             $this->s();
         }
