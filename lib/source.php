@@ -488,17 +488,21 @@ class Method extends Member
         
     }
     
-    private $final          = false;
-    private $abstract       = false;
+    private $final              = false;
+    private $abstract           = false;
+    private $reference_returned = false;
     
-    private $arg_list       = '';
-    private $body           = '';
+    private $arg_list           = '';
+    private $body               = '';
     
     public function is_final() { return $this->final; }
     public function set_final($f) { $this->final = (bool) $b; }
     
     public function is_abstract() { return $this->abstract; }
     public function set_abstract($a) { $this->abstract = (bool) $a; }
+    
+    public function is_reference_returned() { return $this->reference_returned; }
+    public function set_reference_returned($r) { $this->reference_returned = (bool) $r; }
     
     public function get_arg_list() { return $this->arg_list; } 
     public function set_arg_list($args) { $this->arg_list = literal_or_object($args); }
@@ -518,7 +522,9 @@ class Method extends Member
         $php = $this->preamble();
         if ($this->is_final()) $php .= " final";
         if ($this->is_abstract()) $php .= " abstract";
-        $php .= " function {$this->get_name()}({$this->arg_list->to_php()})";
+        $php .= " function ";
+        if ($this->is_reference_returned()) $php .= "&";
+        $php .= "{$this->get_name()}({$this->arg_list->to_php()})";
         if ($this->is_abstract()) {
             $php .= ";";
         } else {

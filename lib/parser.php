@@ -163,6 +163,15 @@ class Parser
                     
                     $this->accept();
                     $this->s();
+                    
+                    if ($this->at('&')) {
+                        $reference = true;
+                        $this->accept();
+                        $this->s();
+                    } else {
+                        $reference = false;
+                    }
+                    
                     $ident = $this->parse_ident();
                     $this->s();
                     $args = $this->parse_arg_list();
@@ -179,6 +188,7 @@ class Parser
                     $method->set_static($static);
                     $method->set_final($final);
                     $method->set_abstract($abstract);
+                    $method->set_reference_returned($reference);
                     $method->set_arg_list($args);
                     $method->set_body($body);
                     
