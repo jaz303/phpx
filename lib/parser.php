@@ -113,9 +113,10 @@ class Parser
                 
             } elseif ($this->at_qualifier()) {
 
-                $access   = 'public';
-                $static   = false;
-                $abstract = false;
+                $access     = 'public';
+                $static     = false;
+                $abstract   = false;
+                $final      = false;
 
                 while ($this->at_qualifier()) {
                     switch ($this->current_token()) {
@@ -123,6 +124,7 @@ class Parser
                         case T_PRIVATE: $access = 'private'; break;
                         case T_PROTECTED: $access = 'protected'; break;
                         case T_STATIC: $static = true; break;
+                        case T_FINAL: $final = true; break;
                         case T_ABSTRACT: $abstract = true; break;
                     }
                     $this->accept();
@@ -175,6 +177,7 @@ class Parser
                     $method = new Method($ident);
                     $method->set_access($access);
                     $method->set_static($static);
+                    $method->set_final($final);
                     $method->set_abstract($abstract);
                     $method->set_arg_list($args);
                     $method->set_body($body);
@@ -322,7 +325,7 @@ class Parser
     }
     
     private function at_qualifier() {
-        return $this->at(array(T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_ABSTRACT));
+        return $this->at(array(T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_FINAL, T_ABSTRACT));
     }
     
     private function consume_balanced_block($open, $close) {
