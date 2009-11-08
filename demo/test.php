@@ -13,11 +13,12 @@ function __autoload($class) {
     require "phpx://$file";
 }
 
-$person = new Person;
+$person = new OtherPerson;
 
 $person->set_forename('Jason');
 $person->set_address_1('17 Hutton');
 
-var_dump($person);
+$person->render_person(10);
 
+var_dump($person);
 ?>

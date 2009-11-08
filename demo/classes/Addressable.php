@@ -1,5 +1,5 @@
 <?php
-class Addressable
+abstract class Addressable implements Countable
 {
     const UK        = 'UK';
     const US        = 'America';

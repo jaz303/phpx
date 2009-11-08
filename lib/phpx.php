@@ -92,6 +92,11 @@ class Stream
 
             $parser         = new Parser;
             $source_tree    = $parser->parse($source);
+            
+            foreach ($source_tree->get_defined_classes() as $class_def) {
+                $class_def->finalise();
+            }
+            
             $this->parsed   = $source_tree->to_php();
             $this->len      = strlen($this->parsed);
 

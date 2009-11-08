@@ -36,6 +36,8 @@ class ClassDef
     
     private $access         = null;
     
+    private $patterns       = array();
+    
     private $chunks         = array();
     
     public function __construct($name) {
@@ -124,6 +126,13 @@ class ClassDef
         
         return $php;
         
+    }
+    
+    //
+    // 
+    
+    public function finalise() {
+        $this->write_pattern_matching_handler();
     }
     
     //
@@ -326,6 +335,29 @@ class ClassDef
         }
     }
     
+    //
+    // Pattern matching
+    
+    public function add_pattern($pattern, $args, $body) {
+        $native_method_name = '_' . md5($pattern);
+        $this->define_method($native_method_name, $args, $body);
+        $this->patterns[$pattern] = $native_method_name;
+    }
+    
+    private function write_pattern_matching_handler() {
+        if (count($this->patterns)) {
+            $body = '';
+            foreach ($this->patterns as $regex => $native_method) {
+                $body .= 'if (preg_match(' . $regex . ', $method, $matches)) {';
+                $body .= '  $args[] = $matches;';
+                $body .= '  return call_user_func_array(array($this, "' . $native_method . '"), $args);';
+                $body .= '}';
+            }
+            $body .= 'throw new \\Exception("Unknown method \'$method\'");';
+            $this->define_method('__call', '$method, $args', $body);
+        }
+    }
+
     //
     // Macros
     

@@ -181,27 +181,48 @@ class Parser
                         $reference = false;
                     }
                     
-                    $ident = $this->parse_ident();
-                    $this->s();
-                    $args = $this->parse_arg_list();
-                    $this->s();
-                    if ($this->at(';')) {
-                        $body = '';
+                    if ($this->at(T_CONSTANT_ENCAPSED_STRING)) {
+                        
+                        if ($access != 'public') $this->error("pattern matched methods must be public");
+                        if ($final) $this->error("pattern matched methods cannot be final");
+                        if ($abstract) $this->error("pattern matched methods cannot be abstract");
+                        if ($static) $this->error("pattern matched methods cannot be static (for now)");
+                        if ($reference) $this->error("pattern matched methods cannot return by reference");
+                        
+                        $pattern = $this->current_text();
                         $this->accept();
-                    } else {
+                        $this->s();
+                        $args = $this->parse_arg_list();
+                        $this->s();
                         $body = substr($this->parse_block(), 1, -1);
+                        
+                        $class->add_pattern($pattern, $args, $body);
+                        
+                    } else {
+                        
+                        $ident = $this->parse_ident();
+                        $this->s();
+                        $args = $this->parse_arg_list();
+                        $this->s();
+                        if ($this->at(';')) {
+                            $body = '';
+                            $this->accept();
+                        } else {
+                            $body = substr($this->parse_block(), 1, -1);
+                        }
+
+                        $method = new Method($ident);
+                        $method->set_access($access);
+                        $method->set_static($static);
+                        $method->set_final($final);
+                        $method->set_abstract($abstract);
+                        $method->set_reference_returned($reference);
+                        $method->set_arg_list($args);
+                        $method->set_body($body);
+
+                        $class->add_method($method);
+                        
                     }
-                    
-                    $method = new Method($ident);
-                    $method->set_access($access);
-                    $method->set_static($static);
-                    $method->set_final($final);
-                    $method->set_abstract($abstract);
-                    $method->set_reference_returned($reference);
-                    $method->set_arg_list($args);
-                    $method->set_body($body);
-                    
-                    $class->add_method($method);
                     
                 }
 
