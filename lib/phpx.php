@@ -23,6 +23,7 @@ class Stream
             require_once "$d/functions.php";
             require_once "$d/access.php";
             require_once "$d/simple.php";
+            require_once "$d/members.php";
             require_once "$d/source.php";
             require_once "$d/arguments.php";
             require_once "$d/parser.php";
@@ -80,7 +81,7 @@ class Stream
         
         self::load_phpx();
         
-        if (in_array($file_path, self::$stack)) {
+        if (in_array($this->absolute_path, self::$stack)) {
             trigger_error(
                 "phpx: cyclic dependencies encountered while attempting to load $file_path",
                 E_USER_ERROR
