@@ -86,7 +86,7 @@ class Access
     
     public function is_public() { return $this->access == 'public'; }
     public function is_protected() { return $this->access == 'protected'; }
-    public function is_private() { return $this->access = 'private'; }
+    public function is_private() { return $this->access == 'private'; }
     
     public function set_public() { $this->access = 'public'; }
     public function set_protected() { $this->access = 'protected'; }
