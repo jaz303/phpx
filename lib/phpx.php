@@ -22,6 +22,7 @@ class Stream
             
             require_once "$d/functions.php";
             require_once "$d/access.php";
+            require_once "$d/simple.php";
             require_once "$d/source.php";
             require_once "$d/arguments.php";
             require_once "$d/parser.php";
