@@ -1,7 +1,7 @@
 phpx - compile-time metaprogramming for PHP
 ===========================================
 
-&copy; 2010 Jason Frame [[jason@onehackoranother.com](mailto:jason@onehackoranother.com)]  
+&copy; 2010 Jason Frame [ [jason@onehackoranother.com](mailto:jason@onehackoranother.com) / [@jaz303](http://twitter.com/jaz303) ]  
 Released under the MIT License.
 
 A lot of attempts have been made at providing Ruby-like features to PHP. All of the ones
