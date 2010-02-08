@@ -1,0 +1,5 @@
+<?php
+interface EIDTC_Recipient {
+    public function send_to($email);
+}
+?>

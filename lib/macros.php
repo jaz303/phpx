@@ -5,10 +5,10 @@ class MacroNotFoundException extends \Exception {}
 
 class Macro
 {
-    private $macros = array();
+    private static $macros = array();
     
     public static function register($macro, $class_name) {
-        self::$macros[$macro] = $class_name;
+        self::$macros[$macro] = absolutize_namespace($class_name);
     }
     
     public static function apply($macro, ClassDef $class, $args) {

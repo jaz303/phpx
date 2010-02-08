@@ -1,0 +1,11 @@
+<?php
+class ExamplesPatternMatchingTestClass {
+    public function "/^(render|display)_template$/"($template_name, $matches) {
+        return "$template_name:$matches[1]";
+    }
+    
+    public function "/^find_(people|managers|employees)$/"($matches) {
+        return $matches[1];
+    }
+}
+?>

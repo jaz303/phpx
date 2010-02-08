@@ -1,0 +1,30 @@
+<?php
+class ExamplesClassEvalTestClass {
+    eval {
+        //
+        // default access modifiers to apply to any methods/variables created
+        // inside.
+        $class->with_access('public', function($class) {
+            //
+            // "define_static_method" is dynamic - can use any valid combination
+            // of public, protected, private, static, instance (negates static),
+            // method, variable and constant.
+            $class->define_static_method(
+                'add', // method name
+                '$a, $b', // arg list
+                'return $a + $b;' // method body
+            );
+            // creates instance variable $foo, get_foo() and set_foo()
+            $class->attr_accessor('foo');
+        });
+        
+        // invoke greeter macro (defined in test case)
+        $class->ecet_greet('Hello');
+    }
+    //
+    // overwrite macro-generated setter:
+    public function set_foo($f) {
+        $this->foo = strtoupper($f);
+    }
+}
+?>

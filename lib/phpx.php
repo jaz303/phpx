@@ -1,4 +1,9 @@
 <?php
+/*
+ * phpx - compile-time metaprogramming for PHP
+ *
+ * (c) 2010 Jason Frame [jason@onehackoranother.com]
+ */
 namespace phpx;
 
 if (!defined('PHPX_INIT')) {
@@ -8,6 +13,62 @@ if (!defined('PHPX_INIT')) {
      */
     define('PHPX_INIT', false);
 }
+
+//
+// Some functions useful for the runtime as well as the compiler
+
+function absolutize_namespace($ns) {
+    return ($ns[0] == '\\') ? $ns : ('\\' . $ns);
+}
+
+function absolute_class_name($class) {
+    if ($class instanceof ClassDef) {
+        $class = $class->get_qualified_name();
+    } elseif ($class instanceof \ReflectionClass) {
+        $class = $class->getName();
+    }
+    return absolutize_namespace((string) $class);
+}
+
+function annotations_for($thing1, $thing2 = null) {
+    if (is_object($thing1)) $thing1 = get_class($thing1);
+    $thing1 = absolutize_namespace($thing1);
+    if ($thing2 == null) {
+        return Annotation::for_class($thing1);
+    } else {
+        return Annotation::for_method($thing1, $thing2);
+    }
+}
+
+//
+// Runtime annotation support
+
+$GLOBALS['__PHPX_ANNOTATIONS__'] = array();
+
+class Annotation
+{
+    private static $annotations = array();
+    
+    public static function export_class_annotation(ClassDef $def) {
+        return '$GLOBALS[\'__PHPX_ANNOTATIONS__\'][\'' . $def->get_qualified_name() . '\'] = ' . var_export($def->get_annotation(), true) . ';';
+    }
+    
+    public static function export_method_annotation(ClassDef $def, Method $method) {
+        return '$GLOBALS[\'__PHPX_ANNOTATIONS__\'][\'' . $def->get_qualified_name() . ':' . $method->get_name(). '\'] = ' . var_export($method->get_annotation(), true) . ';';
+    }
+    
+    public static function for_class($fq_class_name) { return self::get($fq_class_name); }
+    public static function for_method($fq_class_name, $method_name) { return self::get("$fq_class_name:$method_name"); }
+    
+    private static function get($key) {
+        return isset($GLOBALS['__PHPX_ANNOTATIONS__'][$key])
+                    ? $GLOBALS['__PHPX_ANNOTATIONS__'][$key]
+                    : array();
+    }
+}
+
+//
+// Stream Loader
 
 class Stream
 {
@@ -29,6 +90,7 @@ class Stream
             require_once "$d/parser.php";
             require_once "$d/library.php";
             require_once "$d/macros.php";
+            require_once "$d/annotation_parser.php";
             
             if (PHPX_INIT) {
                 $initializer = PHPX_INIT;

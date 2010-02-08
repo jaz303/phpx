@@ -1,0 +1,8 @@
+<?php
+// Note that the mixins currently have to be defined in a different file
+class EMT_Foo {
+    include EMT_InstanceMethods;
+    include static EMT_StaticMethods;
+    include const EMT_Constants;
+}
+?>

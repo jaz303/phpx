@@ -1,0 +1,39 @@
+Future Improvements:
+
+    - Guard blocks. Prevent clobbering of methods etc.
+    - All source objects should implement clone properly
+    - Ability to rename methods
+
+    - Forward declarations, e.g. specify additional mutations to make to classes outside of class
+      declaration. Format could be something like:
+      
+        // closure form
+        phpx\forward("SomeClass", function($class) { });
+        
+        // proxy object
+        phpx\forward("SomeClass")->mixin("Foobar");
+
+    - Pattern matching has poor support for inheritance
+    - Pattern matching could be a lot more dynamic, e.g. use actual live hash table for methods
+    - Pattern matching should tolerate existing __call() implementation
+    - Pattern matching should be implemented statically
+
+    - caching
+      - mtime check
+        define('PHPX_MTIME_CHECK', true);
+        define('PHPX_MTIME_CHECK', 'functionname');
+
+Possible bugs (squashed I think):
+
+    X type-hinted classes don't get leading slash for namespace
+    X parser doesn't recognise "final"
+    X parser doesn't recognise methods returning by reference
+    X mixing in class implementing interface should cause recipient to implement interface
+    X prevent duplicate interfaces
+    
+Namespace handling needs to be sorted properly
+
+http://php.net/manual/en/language.namespaces.rules.php
+
+I'm happy to ignore imports for now as long as whatever resolution method we
+come up can be easily extended to support them.

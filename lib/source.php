@@ -17,6 +17,12 @@ class SourceFile
         return $out;
     }
     
+    public function finalise_classes() {
+        foreach ($this->get_defined_classes() as $class_def) {
+            $class_def->finalise();
+        }
+    }
+    
     public function to_php() {
         return implode('', array_map(function($b) {
             return is_object($b) ? $b->to_php() : $b;
@@ -27,6 +33,7 @@ class SourceFile
 class ClassDef
 {
     private $name;
+    
     private $namespace      = '';
     
     private $final          = false;
@@ -39,6 +46,8 @@ class ClassDef
     private $patterns       = array();
     
     private $chunks         = array();
+    
+    private $annotation     = null;
     
     public function __construct($name) {
         $this->name = $name;
@@ -76,6 +85,16 @@ class ClassDef
             $this->interfaces[] = $interface;
         }
     }
+    
+    //
+    // Annotations
+    
+    public function has_annotation() { return $this->annotation !== null; }
+    public function get_annotation() { return $this->annotation; }
+    public function set_annotation($annote) { $this->annotation = $annote; }
+    
+    //
+    //
     
     public function with_access($access, $lambda) { 
         try {
@@ -123,6 +142,16 @@ class ClassDef
         }
         
         $php .= "}\n";
+        
+        if ($this->has_annotation()) {
+            $php .= Annotation::export_class_annotation($this) . "\n";
+        }
+        
+        foreach ($this->methods() as $method) {
+            if ($method->has_annotation()) {
+                $php .= Annotation::export_method_annotation($this, $method) . "\n";
+            }
+        }
         
         return $php;
         
@@ -338,7 +367,9 @@ class ClassDef
     //
     // Pattern matching
     
-    public function add_pattern($pattern, $args, $body) {
+    public function add_pattern($pattern, $args, $body = null) {
+        if (!is_object($pattern)) $pattern = new Value($pattern);
+        $pattern = $pattern->to_php();
         $native_method_name = '_' . md5($pattern);
         $this->define_method($native_method_name, $args, $body);
         $this->patterns[$pattern] = $native_method_name;
@@ -348,7 +379,8 @@ class ClassDef
         if (count($this->patterns)) {
             $body = '';
             foreach ($this->patterns as $regex => $native_method) {
-                $body .= 'if (preg_match(' . $regex . ', $method, $matches)) {';
+                $regex = new Literal($regex);
+                $body .= 'if (preg_match(' . $regex->to_php() . ', $method, $matches)) {';
                 $body .= '  $args[] = $matches;';
                 $body .= '  return call_user_func_array(array($this, "' . $native_method . '"), $args);';
                 $body .= '}';

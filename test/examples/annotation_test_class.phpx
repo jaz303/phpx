@@ -1,0 +1,16 @@
+<?php
+/**
+ * (shortcut for :model = true)
+ * :model
+ */
+class ExamplesAnnotationTestClass {
+    /**
+     * Build up an array over multiple lines for clarity:
+     * :access[] = "admin"
+     * :access[] = "public"
+     */
+    public static function find_all() {
+        // ...
+    }
+}
+?>

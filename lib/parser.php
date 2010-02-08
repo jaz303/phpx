@@ -12,6 +12,8 @@ class Parser
     private $text;
     private $tokens;
     private $curr;
+    private $last_annotation;
+    private $ix;
     
     private $namespace      = '';
     
@@ -23,14 +25,16 @@ class Parser
     public function reset($text) {
         $this->text = $text;
         $this->tokens = token_get_all($this->text);
+        $this->last_annotation = null;
         $this->ix = -1;
         $this->advance();
+        
     }
     
     public function parse_source_file() {
         $source = new SourceFile;
         while (!$this->eof()) {
-            if ($this->at(array(T_ABSTRACT, T_CLASS))) {
+            if ($this->at(array(T_ABSTRACT, T_FINAL, T_CLASS))) {
                 $source->push($this->parse_class());
             } elseif ($this->at(T_NAMESPACE)) {
                 $this->accept();
@@ -45,6 +49,9 @@ class Parser
     }
     
     public function parse_class() {
+        
+        $class_annotation = $this->last_annotation;
+        $this->last_annotation = null;
       
         // abstract class
       
@@ -69,6 +76,9 @@ class Parser
         $class = new ClassDef($this->parse_ident());
         $class->set_abstract($abstract);
         $class->set_namespace($this->namespace);
+        if ($class_annotation) {
+            $class->set_annotation($class_annotation);
+        }
         $this->s();
         
         // superclass
@@ -112,6 +122,9 @@ class Parser
                 $this->accept(';');
                 
             } elseif ($this->at_qualifier()) {
+                
+                $member_annotation = $this->last_annotation;
+                $this->last_annotation = null;
 
                 $access     = 'public';
                 $static     = false;
@@ -196,7 +209,7 @@ class Parser
                         $this->s();
                         $body = substr($this->parse_block(), 1, -1);
                         
-                        $class->add_pattern($pattern, $args, $body);
+                        $class->add_pattern(new Literal($pattern), $args, $body);
                         
                     } else {
                         
@@ -221,6 +234,10 @@ class Parser
                         $method->set_body($body);
 
                         $class->add_method($method);
+                        
+                        if ($member_annotation) {
+                            $method->set_annotation($member_annotation);
+                        }
                         
                     }
                     
@@ -420,6 +437,23 @@ class Parser
     }
     
     private function advance() {
+        // Hacky. Whenever we advance we check for a doc comment, and if it's there
+        // we parse it for annotations and stash them. I'd previously had this check
+        // in the s() method for skipping ignored tokens but that didn't work outwith
+        // a class definition because phpx is essentially dumb and just passes through
+        // any tokens it's not interested in.
+        if (is_array($this->curr) && $this->curr[0] == T_DOC_COMMENT) {
+            $this->last_annotation = null;
+            try {
+                $parser = new AnnotationParser();
+                $annote = $parser->parse($this->current_text());
+                if (count($annote)) {
+                    $this->last_annotation = $annote;
+                }
+            } catch (\Exception $e) {
+                // TODO: some form of error reporting would be good
+            }
+        }
         $this->ix++;
         if ($this->ix >= count($this->tokens)) {
             $this->curr = null;
@@ -429,13 +463,9 @@ class Parser
     }
     
     private function s() {
-        while (in_array($this->current_token(),
-                        array(T_WHITESPACE,
-                              T_COMMENT,
-                              T_DOC_COMMENT))) {
+        while (in_array($this->current_token(), array(T_WHITESPACE, T_COMMENT, T_DOC_COMMENT))) {
             $this->advance();
         }
-        
     }
     
     private function error($msg) {

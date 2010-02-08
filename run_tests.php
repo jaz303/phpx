@@ -18,4 +18,13 @@ $suite->auto_fill();
 
 // And away we go.
 $suite->run(new ztest\ConsoleReporter);
+
+function parse_and_eval($file) {
+    $parser = new phpx\Parser;
+    $class  = $parser->parse(file_get_contents($file));
+    $class->finalise_classes();
+    phpx\Library::register_file($class);
+    $source = $class->to_php();
+    eval('?>' . $source);
+}
 ?>

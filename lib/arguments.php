@@ -13,7 +13,7 @@ class ArgumentList
     
     private $arguments = array();
     
-    public function arity() { return count($arguments); }
+    public function arity() { return count($this->arguments); }
     public function get_arguments() { return $this->arguments; }
     
     public function push(Argument $arg) { $this->arguments[] = $arg; }

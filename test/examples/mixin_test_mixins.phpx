@@ -1,0 +1,13 @@
+<?php
+class EMT_InstanceMethods {
+    public function foo() { return "foo"; }
+}
+
+class EMT_StaticMethods {
+    public static function bar() { return "bar"; }
+}
+
+class EMT_Constants {
+    const BAZ = 'baz';
+}
+?>

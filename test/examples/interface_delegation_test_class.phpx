@@ -1,0 +1,14 @@
+<?php
+class EIDTC_Person implements EIDTC_Recipient {
+    public function send_to($email) {
+        return "message sent to $email";
+    }
+}
+
+class EIDTC_Addressable {
+    protected $person implements \EIDTC_Recipient;
+    public function __construct() {
+        $this->person = new EIDTC_Person();
+    }
+}
+?>
