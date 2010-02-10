@@ -150,6 +150,10 @@ class Parser
                 if ($this->at(T_VARIABLE)) {
                     
                     $variable = $this->parse_variable($access, $static);
+                    if ($member_annotation) {
+                        $variable->set_annotation($member_annotation);
+                    }
+                    
                     $class->add_variable($variable);
                     $this->s();
                     

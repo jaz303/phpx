@@ -153,6 +153,12 @@ class ClassDef
             }
         }
         
+        foreach ($this->variables() as $variable) {
+            if ($variable->has_annotation()) {
+                $php .= Annotation::export_variable_annotation($this, $variable) . "\n";
+            }
+        }
+        
         return $php;
         
     }

@@ -9,6 +9,12 @@ class ExamplesAnnotationTest extends ztest\UnitTestCase {
         assert_equal(array('model' => true),
                      phpx\annotations_for(new ExamplesAnnotationTestClass));
                      
+        assert_equal(array('foo' => 'bar'),
+                     phpx\annotations_for('ExamplesAnnotationTestClass', '$baz'));
+
+        assert_equal(array('foo' => 'bar'),
+                     phpx\annotations_for(new ExamplesAnnotationTestClass, '$baz'));
+                     
         assert_equal(array('access' => array('admin', 'public')),
                      phpx\annotations_for('ExamplesAnnotationTestClass', 'find_all'));
 

@@ -36,7 +36,11 @@ function annotations_for($thing1, $thing2 = null) {
     if ($thing2 == null) {
         return Annotation::for_class($thing1);
     } else {
-        return Annotation::for_method($thing1, $thing2);
+        if ($thing2[0] == '$') {
+            return Annotation::for_variable($thing1, substr($thing2, 1));
+        } else {
+            return Annotation::for_method($thing1, $thing2);
+        }
     }
 }
 
@@ -57,8 +61,13 @@ class Annotation
         return '$GLOBALS[\'__PHPX_ANNOTATIONS__\'][\'' . $def->get_qualified_name() . ':' . $method->get_name(). '\'] = ' . var_export($method->get_annotation(), true) . ';';
     }
     
+    public static function export_variable_annotation(ClassDef $def, Variable $variable) {
+        return '$GLOBALS[\'__PHPX_ANNOTATIONS__\'][\'' . $def->get_qualified_name() . ':$' . $variable->get_name(). '\'] = ' . var_export($variable->get_annotation(), true) . ';';
+    }
+    
     public static function for_class($fq_class_name) { return self::get($fq_class_name); }
     public static function for_method($fq_class_name, $method_name) { return self::get("$fq_class_name:$method_name"); }
+    public static function for_variable($fq_class_name, $variable_name) { return self::get("$fq_class_name:\$$variable_name"); }
     
     private static function get($key) {
         return isset($GLOBALS['__PHPX_ANNOTATIONS__'][$key])

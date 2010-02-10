@@ -26,6 +26,7 @@ abstract class Member
     private $name;
     private $static         = false;
     private $access         = 'public';
+    private $annotation     = null;
     
     public function __construct($name) {
         $this->name = $name;
@@ -41,6 +42,10 @@ abstract class Member
     public function set_access_public() { $this->set_access('public'); }
     public function set_access_protected() { $this->set_access('protected'); }
     public function set_access_private() { $this->set_access('private'); }
+    
+    public function has_annotation() { return $this->annotation !== null; }
+    public function get_annotation() { return $this->annotation; }
+    public function set_annotation($annote) { $this->annotation = $annote; }
     
     protected function preamble() {
         $php = '';
@@ -121,8 +126,6 @@ class Method extends Member
     private $arg_list           = '';
     private $body               = '';
     
-    private $annotation         = null;
-    
     public function is_final() { return $this->final; }
     public function set_final($f) { $this->final = (bool) $b; }
     
@@ -134,13 +137,6 @@ class Method extends Member
     
     public function get_arg_list() { return $this->arg_list; } 
     public function set_arg_list($args) { $this->arg_list = literal_or_object($args); }
-    
-    //
-    // Annotations
-    
-    public function has_annotation() { return $this->annotation !== null; }
-    public function get_annotation() { return $this->annotation; }
-    public function set_annotation($annote) { $this->annotation = $annote; }
     
     public function arity() {
         if ($this->arg_list instanceof ArgumentList) {

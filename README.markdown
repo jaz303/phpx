@@ -252,7 +252,7 @@ Nice to haves:
   * Possibility for restricting macro availability to certain classes
     (e.g. only classes extending `ActiveRecord` would get the `belongs_to()` macro)
   * Should be possible to merge annotations through inheritance tree
-  * Should be possible to add annotations to member variables as well as methods
+  * <del>Should be possible to add annotations to member variables as well as methods</del>
   * Pattern-matching should work with inheritance
   * Pattern-matching should work statically
   * Pattern-matching should tolerate existing __call() implementation
