@@ -4,8 +4,7 @@
 // load phpx runtime
 require dirname(__FILE__)  . '/lib/phpx.php';
 
-// autoloader should resolve class name to path and then require() it using
-// the phpx:// protocol. include_path will be searched.
+// autoloader should resolve class name to path and then pass it to phpx\PHPX::load()
 function __autoload($class) {
     
     if ($class[0] == '\\') {
@@ -13,6 +12,7 @@ function __autoload($class) {
     }
     
     $file = $class . '.php';
-    require "phpx://$file";
+    
+    phpx\PHPX::load($file);
 }
 ?>

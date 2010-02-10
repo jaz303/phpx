@@ -68,16 +68,24 @@ class Annotation
 }
 
 //
-// Stream Loader
+// Loader
 
-class Stream
+class PHPX
 {
     //
     // Don't rely on an autlooader to load phpx compiler
     
     private static $phpx_loaded = false;
     
-    public static function load_phpx() {
+    //
+    //
+    
+    private static $stack = array();
+    
+    //
+    //
+    
+    public static function init() {
         if (!self::$phpx_loaded) {
             $d = dirname(__FILE__);
             
@@ -101,58 +109,30 @@ class Stream
         }
     }
     
-    //
-    //
-    
-    private static $stack = array();
-    
-    //
-    //
-    
-    public $context;
-    
-    private $position;
-    private $parsed;
-    private $len;
-    
-    private $cached         = false;
-    private $absolute_path  = null;
-    private $fd             = null;
-    
-    public function stream_open($path, $mode, $options, &$opened_path) {
+    public static function load($file) {
         
-        if (strpos($mode, 'r') === false) {
+        $file = self::resolve_file_in_include_path($file);
+        if ($file === null) {
             return false;
         }
         
-        $this->absolute_path = substr($path, 7); // strip leading phpx://
-        if ($options & STREAM_USE_PATH) {
-            if (!is_readable($this->absolute_path)) {
-                $this->absolute_path = $this->resolve_file_in_include_path($this->absolute_path);
-                if (!$this->absolute_path) {
-                    return false;
-                }
-            }
-        }
-        
-        if (!$source = file_get_contents($this->absolute_path)) {
-            return false;
-        }
-        
-        $opened_path = $this->absolute_path;
-        
-        self::load_phpx();
-        
-        if (in_array($this->absolute_path, self::$stack)) {
+        if (in_array($file, self::$stack)) {
             trigger_error(
-                "phpx: cyclic dependencies encountered while attempting to load $file_path",
+                "phpx: cyclic dependencies encountered while attempting to load $file",
                 E_USER_ERROR
             );
         }
         
+        $source = file_get_contents($file);
+        if ($source === false) {
+            return false;
+        }
+        
+        self::init();
+        
         try {
             
-            self::$stack[] = $this->absolute_path;
+            self::$stack[] = $file;
 
             $parser         = new Parser;
             $source_tree    = $parser->parse($source);
@@ -161,8 +141,7 @@ class Stream
                 $class_def->finalise();
             }
             
-            $this->parsed   = $source_tree->to_php();
-            $this->len      = strlen($this->parsed);
+            eval('?>' . $source_tree->to_php());
 
             Library::register_file($source_tree);
             
@@ -179,7 +158,7 @@ class Stream
     }
     
     // no idea why i need to write this method myself, PHP should do it for me.
-    private function resolve_file_in_include_path($file) {
+    private static function resolve_file_in_include_path($file) {
         $candidates = explode(PATH_SEPARATOR, get_include_path());
         foreach ($candidates as $dir) {
             $path = realpath($dir . '/' . $file);
@@ -189,71 +168,5 @@ class Stream
         }
         return null;
     }
-    
-    public function stream_stat() {
-        return $this->cached ? fstat($this->fd) : stat($this->absolute_path);
-    }
-    
-    public function stream_read($count) {
-        if ($this->stream_eof()) {
-            return false;
-        } else {
-            if ($this->cached) {
-                return fread($this->fd, $count);
-            } else {
-                $remain = $this->len - $this->position;
-                if ($count > $remain) {
-                    $count = $remain;
-                }
-                $out = substr($this->parsed, $this->position, $count);
-                $this->position += $count;
-                return $out;
-            }
-        }
-    }
-    
-    public function stream_tell() {
-        if ($this->cached) {
-            return ftell($this->fd);
-        } else {
-            return $this->position;
-        }
-    }
-    
-    public function stream_eof() {
-        if ($this->cached) {
-            return feof($this->fd);
-        } else {
-            return $this->position >= $this->len;
-        }
-    }
-    
-    public function stream_seek($offset, $whence) {
-        if ($this->cached) {
-            return fseek($this->fd, $offset, $whence);
-        } else {
-            switch ($whence) {
-                case SEEK_SET:
-                    $this->position = $offset;
-                    break;
-                case SEEK_CUR:
-                    $this->position += $offset;
-                    break;
-                case SEEK_END:
-                    $this->position = $this->len + $offset;
-                    break;
-            }
-        }
-    }
-    
-    public function stream_close() {
-        if ($this->cached) {
-            return fclose($this->fd);
-        }
-    }
-}
-
-if (!stream_wrapper_register('phpx', 'phpx\\Stream')) {
-    trigger_error("Couldn't register phpx stream filter", E_USER_ERROR);
 }
 ?>

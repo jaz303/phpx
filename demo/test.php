@@ -16,7 +16,7 @@ class AddressableMacro {
 }
 
 // Force compiler to load for test purposes
-phpx\Stream::load_phpx();
+phpx\PHPX::init();
 phpx\register_macro('addressable', 'AddressableMacro');
 
 $customer = new Customer;

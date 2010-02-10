@@ -4,7 +4,7 @@
 require 'ztest/ztest.php';
 
 require 'lib/phpx.php';
-phpx\Stream::load_phpx();
+phpx\PHPX::init();
 
 // Create test suite
 $suite = new ztest\TestSuite("phpx test suite");
