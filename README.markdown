@@ -262,7 +262,7 @@ Nice to haves:
   * Error handling is generally poor and should be improved
   * Tests - a good few exist but a lot is not covered
   * <del>Stream wrappers are currently used to handle script loading. I can't remember why I took this approach and I'm not sure it's any better than simply reading the file using `file_get_contents()`</del>
-  * Forward declarations - we'll never be able to support Ruby's open classes but we can get pretty close by providing hooks to pre-register class mutations and call them at the appropriate time e.g.:
+  * <del>Forward declarations - we'll never be able to support Ruby's open classes but we can get pretty close by providing hooks to pre-register class mutations and call them at the appropriate time e.g.:</del>
   
         // closure form - lambda would be run as class eval {} block
         phpx\forward("SomeClass", function($class) { });

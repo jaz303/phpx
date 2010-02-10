@@ -1,0 +1,6 @@
+<?php
+class ExamplesForwardTestClass {
+    public function after_1() { return "FAIL"; }
+    public function after_2() { return "FAIL"; }
+}
+?>

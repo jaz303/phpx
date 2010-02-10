@@ -104,6 +104,9 @@ class Parser
         $this->s();
         $this->accept('{');
         
+        // forward declarations: before
+        Forward::apply('before', $class);
+        
         // const, var, methods, eval, mixin
         
         $this->s();
@@ -280,6 +283,9 @@ class Parser
         
         $this->s();
         $this->accept('}');
+        
+        // forward declarations: after
+        Forward::apply('after', $class);
         
         return $class;
     }

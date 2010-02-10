@@ -99,6 +99,7 @@ class PHPX
             require_once "$d/library.php";
             require_once "$d/macros.php";
             require_once "$d/annotation_parser.php";
+            require_once "$d/forward.php";
             
             if (PHPX_INIT) {
                 $initializer = PHPX_INIT;
