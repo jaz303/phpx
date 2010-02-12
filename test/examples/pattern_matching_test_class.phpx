@@ -7,5 +7,13 @@ class ExamplesPatternMatchingTestClass {
     public function "/^find_(people|managers|employees)$/"($matches) {
         return $matches[1];
     }
+    
+    public static function "/^find_(all|one)$/"($id, $matches) {
+        return $matches[1] . ':' . $id;
+    }
+    
+    public static function "/^(foo|bar|baz)$/"($matches) {
+        return $matches[1];
+    }
 }
 ?>

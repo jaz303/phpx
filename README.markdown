@@ -254,7 +254,7 @@ Nice to haves:
   * Should be possible to merge annotations through inheritance tree
   * <del>Should be possible to add annotations to member variables as well as methods</del>
   * Pattern-matching should work with inheritance
-  * Pattern-matching should work statically
+  * <del>Pattern-matching should work statically</del>
   * Pattern-matching should tolerate existing __call() implementation
   * Introduce guard blocks to prevent method clobbering
   * Ability to rename/copy class members

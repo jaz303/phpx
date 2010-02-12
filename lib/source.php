@@ -34,20 +34,21 @@ class ClassDef
 {
     private $name;
     
-    private $namespace      = '';
+    private $namespace          = '';
     
-    private $final          = false;
-    private $abstract       = false;
-    private $superclass     = null;
-    private $interfaces     = array();
+    private $final              = false;
+    private $abstract           = false;
+    private $superclass         = null;
+    private $interfaces         = array();
     
-    private $access         = null;
+    private $access             = null;
     
-    private $patterns       = array();
+    private $patterns           = array();
+    private $static_patterns    = array();
     
-    private $chunks         = array();
+    private $chunks             = array();
     
-    private $annotation     = null;
+    private $annotation         = null;
     
     public function __construct($name) {
         $this->name = $name;
@@ -376,24 +377,47 @@ class ClassDef
     public function add_pattern($pattern, $args, $body = null) {
         if (!is_object($pattern)) $pattern = new Value($pattern);
         $pattern = $pattern->to_php();
-        $native_method_name = '_' . md5($pattern);
-        $this->define_method($native_method_name, $args, $body);
+        $native_method_name = '_' . md5('i:' . $pattern);
+        $this->define_protected_instance_method($native_method_name, $args, $body);
         $this->patterns[$pattern] = $native_method_name;
+    }
+    
+    public function add_static_pattern($pattern, $args, $body = null) {
+        if (!is_object($pattern)) $pattern = new Value($pattern);
+        $pattern = $pattern->to_php();
+        $native_method_name = '_' . md5('s:' . $pattern);
+        $this->define_protected_static_method($native_method_name, $args, $body);
+        $this->static_patterns[$pattern] = $native_method_name;
     }
     
     private function write_pattern_matching_handler() {
         if (count($this->patterns)) {
-            $body = '';
-            foreach ($this->patterns as $regex => $native_method) {
-                $regex = new Literal($regex);
-                $body .= 'if (preg_match(' . $regex->to_php() . ', $method, $matches)) {';
-                $body .= '  $args[] = $matches;';
-                $body .= '  return call_user_func_array(array($this, "' . $native_method . '"), $args);';
-                $body .= '}';
-            }
-            $body .= 'throw new \\Exception("Unknown method \'$method\'");';
-            $this->define_method('__call', '$method, $args', $body);
+            $this->define_public_instance_method(
+                '__call',
+                '$method, $args', 
+                $this->body_for_pattern_matcher($this->patterns, '$this')
+            );
         }
+        if (count($this->static_patterns)) {
+            $this->define_public_static_method(
+                '__callStatic',
+                '$method, $args', 
+                $this->body_for_pattern_matcher($this->static_patterns, 'get_called_class()')
+            );
+        }
+    }
+    
+    private function body_for_pattern_matcher($patterns, $context) {
+        $body = '';
+        foreach ($patterns as $regex => $native_method) {
+            $regex = new Literal($regex);
+            $body .= 'if (preg_match(' . $regex->to_php() . ', $method, $matches)) {';
+            $body .= '  $args[] = $matches;';
+            $body .= '  return call_user_func_array(array(' . $context . ', "' . $native_method . '"), $args);';
+            $body .= '}';
+        }
+        $body .= 'throw new \\Exception("Unknown method \'$method\'");';
+        return $body;
     }
 
     //

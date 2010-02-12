@@ -206,7 +206,6 @@ class Parser
                         if ($access != 'public') $this->error("pattern matched methods must be public");
                         if ($final) $this->error("pattern matched methods cannot be final");
                         if ($abstract) $this->error("pattern matched methods cannot be abstract");
-                        if ($static) $this->error("pattern matched methods cannot be static (for now)");
                         if ($reference) $this->error("pattern matched methods cannot return by reference");
                         
                         $pattern = $this->current_text();
@@ -216,7 +215,11 @@ class Parser
                         $this->s();
                         $body = substr($this->parse_block(), 1, -1);
                         
-                        $class->add_pattern(new Literal($pattern), $args, $body);
+                        if ($static) {
+                            $class->add_static_pattern(new Literal($pattern), $args, $body);
+                        } else {
+                            $class->add_pattern(new Literal($pattern), $args, $body);
+                        }
                         
                     } else {
                         

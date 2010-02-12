@@ -11,6 +11,12 @@ class ExamplesPatternMatchingTest extends ztest\UnitTestCase {
         assert_equal('people', $i->find_people());
         assert_equal('managers', $i->find_managers());
         
+        assert_equal('all:1', ExamplesPatternMatchingTestClass::find_all(1));
+        assert_equal('one:2', ExamplesPatternMatchingTestClass::find_one(2));
+        
+        assert_equal('foo', ExamplesPatternMatchingTestClass::foo());
+        assert_equal('bar', ExamplesPatternMatchingTestClass::bar());
+        
     }
 }
 ?>
