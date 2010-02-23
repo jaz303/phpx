@@ -249,6 +249,7 @@ The biggy:
     
 Nice to haves:
 
+  * Support type-hinting for scalar types by injecting type-coercion code at start of methods
   * Possibility for restricting macro availability to certain classes
     (e.g. only classes extending `ActiveRecord` would get the `belongs_to()` macro)
   * Should be possible to merge annotations through inheritance tree
