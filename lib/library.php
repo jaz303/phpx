@@ -18,6 +18,7 @@ class Library
     }
     
     public static function get_class_definition($class_name) {
+        $class_name = absolutize_namespace($class_name);
         // class_exists will consult the autoloader, which should be configured
         // to delegate loading to phpx
         if (class_exists($class_name, true)) {

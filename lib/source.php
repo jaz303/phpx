@@ -90,6 +90,20 @@ class ClassDef
     }
     
     //
+    // Hierarchy
+    
+    public function get_class_hierarchy() {
+        $hierarchy = array($this);
+        $superclass = $this->get_superclass();
+        while ($superclass) {
+            $superclass_definition = Library::get_class_definition($superclass);
+            array_unshift($hierarchy, $superclass_definition);
+            $superclass = $superclass_definition->get_superclass();
+        }
+        return $hierarchy;
+    }
+    
+    //
     // Annotations
     
     public function has_annotation() { return $this->annotation !== null; }

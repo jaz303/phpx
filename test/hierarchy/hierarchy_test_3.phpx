@@ -1,0 +1,5 @@
+<?php
+class HHT3 extends HHT2 {
+
+}
+?>
