@@ -7,8 +7,20 @@ class Macro
 {
     private static $macros = array();
     
-    public static function register($macro, $class_name) {
-        self::$macros[$macro] = absolutize_namespace($class_name);
+    public static function register($macro, $class_name = null) {
+        if ($class_name === null) {
+            $class_name = $macro;
+            $reflection = new \ReflectionClass($class_name);
+            $methods = array();
+            foreach ($reflection->getMethods() as $method) {
+                if ($method->isPublic()) $methods[] = $method->getName();
+            }
+        } else {
+            $methods = array($macro);
+        }
+        foreach ($methods as $m) {
+            self::$macros[$m] = absolutize_namespace($class_name);
+        }
     }
     
     public static function apply($macro_method, ClassDef $class, $args) {
