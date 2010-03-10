@@ -92,15 +92,24 @@ class ClassDef
     //
     // Hierarchy
     
+    /**
+     * Returns an array of ClassDef instances representing the hierarchy of this class,
+     * or <tt>null</tt> if the definition for any class in the hierarchy is not
+     * available. This happens when a class has not been loaded via the PHPX autoloader.
+     */
     public function get_class_hierarchy() {
-        $hierarchy = array($this);
-        $superclass = $this->get_superclass();
-        while ($superclass) {
-            $superclass_definition = Library::get_class_definition($superclass);
-            array_unshift($hierarchy, $superclass_definition);
-            $superclass = $superclass_definition->get_superclass();
+        try {
+            $hierarchy = array($this);
+            $superclass = $this->get_superclass();
+            while ($superclass) {
+                $superclass_definition = Library::get_class_definition($superclass);
+                array_unshift($hierarchy, $superclass_definition);
+                $superclass = $superclass_definition->get_superclass();
+            }
+            return $hierarchy;
+        } catch (ClassNotFoundException $cnfe) {
+            return null;
         }
-        return $hierarchy;
     }
     
     //

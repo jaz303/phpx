@@ -1,0 +1,16 @@
+<?php
+class IAT1Test1
+{
+    eval {
+        $class->write_inheritable_attribute('a', 1);
+        $class->write_inheritable_attribute('b', 1);
+        $class->write_inheritable_attribute('c', 1);
+        
+        $class->merge_inheritable_array('d', array('a' => 1, 'b' => 1, 'c' => 1));
+    }
+    
+    public function get_static($k) {
+        return static::$$k;
+    }
+}
+?>

@@ -1,0 +1,11 @@
+<?php
+class IAT1Test2 extends IAT1Test1
+{
+    eval {
+        $class->write_inheritable_attribute('b', 2);
+        $class->write_inheritable_attribute('c', 2);
+        
+        $class->merge_inheritable_array('d', array('b' => 2, 'c' => 2));
+    }
+}
+?>

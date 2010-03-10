@@ -109,6 +109,10 @@ class PHPX
             require_once "$d/macros.php";
             require_once "$d/annotation_parser.php";
             require_once "$d/forward.php";
+            require_once "$d/inheritable_attributes.php";
+            
+            Macro::register('\\phpx\\InheritableAttributes');
+            Macro::register_finalizer('\\phpx\\InheritableAttributes');
             
             if (PHPX_INIT) {
                 $initializer = PHPX_INIT;
