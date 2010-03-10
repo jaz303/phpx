@@ -50,6 +50,8 @@ class ClassDef
     
     private $annotation         = null;
     
+    public $stash               = array();
+    
     public function __construct($name) {
         $this->name = $name;
         $this->access = new AccessStack;
