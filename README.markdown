@@ -157,7 +157,7 @@ Here's a quick overview of all of phpx's syntax features:
     something similar to Rails' `belongs_to`:
   
         class BelongsToMacro {
-            public function apply($class, $model) {
+            public function belongs_to($class, $model) {
                 $class->define_public_instance_method("get_$model", "return null;");
                 $class->define_public_instance_method("build_$model", "return;");
                 $class->define_public_instance_method("create_$model", "return;");

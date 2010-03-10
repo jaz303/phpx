@@ -1,6 +1,6 @@
 <?php
 class ECET_GreetMacro {
-    public function apply($class, $greeting) {
+    public function ecet_greet($class, $greeting) {
         $class->define_public_instance_method("greet", '$name', "return \"$greeting \$name\";");
     }
 }

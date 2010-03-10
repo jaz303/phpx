@@ -1,7 +1,7 @@
 <?php
 class TestMacro
 {
-    public function apply($class, $name, $value) {
+    public function test_macro($class, $name, $value) {
         $class->define_method($name, 'return ' . var_export($value, true) . ';');
     }
 }
