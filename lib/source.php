@@ -170,6 +170,7 @@ class ClassDef
     // 
     
     public function finalise() {
+        Macro::apply_finalizers($this);
         $this->write_pattern_matching_handler();
     }
     
