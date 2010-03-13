@@ -35,11 +35,27 @@ class InheritableAttributes
         $class->stash['inheritable_attributes']['attrib'][$name] = $value;
     }
     
-    public function merge_inheritable_array($class, $name, $array) {
+    public function merge_inheritable_array($class, $name, array $array) {
         if (isset($class->stash['inheritable_attributes'][$name])) {
             $class->stash['inheritable_attributes']['array'][$name] = array_merge($class->stash['inheritable_attributes'][$name], array());
         } else {
             $class->stash['inheritable_attributes']['array'][$name] = $array;
+        }
+    }
+    
+    public function inheritable_array_push($class, $name, $value) {
+        if (isset($class->stash['inheritable_attributes']['array'][$name])) {
+            $class->stash['inheritable_attributes']['array'][$name][] = $value;
+        } else {
+            $class->stash['inheritable_attributes']['array'][$name] = array($value);
+        }
+    }
+    
+    public function inheritable_array_unshift($class, $name, $value) {
+        if (isset($class->stash['inheritable_attributes']['array'][$name])) {
+            array_unshift($class->stash['inheritable_attributes']['array'][$name], $value);
+        } else {
+            $class->stash['inheritable_attributes']['array'][$name] = array($value);
         }
     }
 }
