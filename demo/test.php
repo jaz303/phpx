@@ -4,7 +4,7 @@ require '../boot.php';
 set_include_path(dirname(__FILE__) . '/classes');
 
 class AddressableMacro {
-    public function apply($class) {
+    public function addressable($class) {
         $class->attr_accessor('name');
         $class->attr_accessor('address_1');
         $class->attr_accessor('address_2');
