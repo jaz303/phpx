@@ -1,5 +1,5 @@
 <?php
-class UsersController extends Controller
+class UsersController extends MyController
 {
     protected $user = null;
     
