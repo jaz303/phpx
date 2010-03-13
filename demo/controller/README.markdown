@@ -86,7 +86,7 @@ In the course of handling a request, one of our actions (or filters) might throw
         }
     }
 
-Pretty simple - we just stash the exception class and its associated handler method in an inheritable array. Now for the handler. For this, we'll use a mixin:
+Pretty simple - we just stash the exception class and its associated handler method in an inheritable array. Now for the handler. Again, we'll use a mixin:
 
     class RescueMixin
     {
